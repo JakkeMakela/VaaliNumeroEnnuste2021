@@ -125,7 +125,7 @@ gPlot2 <- ggplot(loppuKaksi)+
 print(gPlot2)
 
 
-gPlot3 <- ggplot(loppuKaksi)+
+gPlot3 <-  ggplot(loppuKaksi)+
   geom_smooth(aes(x=loppuKaksi,y=prosentti),span=0.1,se=FALSE)+
     scale_x_continuous(breaks=seq(0,100,10))+
   ggtitle("Kahden viimeisen numeron todennäköisyys")
