@@ -1,0 +1,145 @@
+---
+title: "Vaalinumerot"
+author: "Jakke Mäkelä"
+date: "2021-05-10"
+output: html_document
+---
+
+Lasketaan tietyn vaalinumeron saamisen todennäköisyys, kun henkilön paikka omalla listalla tiedetään, ja listojen henkilömäärät tiedetään.
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+
+```
+
+
+
+```{r }
+
+
+
+
+#Nopeutetaan laskentaa koodaamalla saman pituiset listat samalla koodilla. Käytetään vektoreita nopeuttamaan laskua
+#Huom! Oletetaan, että oma lista on koodilla numero 1
+listaKoodi <- c(1,  1,  1,   1, 1,     2,  3,  4,  5,  6, 6,  7,  8,8)
+listaPituus<- c(100,                  71, 58,  21, 8,     4,  2,    1)
+
+omaKoodi <- 1  #Listan koodi jolla itse on
+omaSijoitus <- 56 #Oma sijainti omalla listalla
+
+
+pieninNumeroKorjaus <- 1  #Ykkösen ja pienimmän jaetun ehdokasnumeron ero. Normaalisti pienin ehdokasnumero on 2, jolloin pieninNumeroKorjaus=1 
+
+listaLukumaara <- length(listaKoodi) #nopeuttamiseksi tehdään oma muuttuja
+
+
+ehdokkaidenMaara <- sum(listaPituus[listaKoodi])
+uniikitListaPituudet <- length(unique(listaKoodi))
+
+uniikkienKombinaatioidenMaara <- factorial(uniikitListaPituudet)
+
+```
+
+
+
+```{r}
+
+omaNumeroSimuloitu <- NULL
+
+for (kokeilu in 1:uniikkienKombinaatioidenMaara){
+
+otos <- sample(listaKoodi)  #Oletuksena järjestää luvut
+
+#Yhdellä askeleella:
+#Lasketaan slotin otos[i] listan pituus
+#Lasketaan yhteen millä numerolla lista otos[i] alkaa, tehden alkunumeron korjaus
+#Poistetaan viimeinen cumsum turhana
+alkuKohta <- (c(1,cumsum(listaPituus[otos]))+pieninNumeroKorjaus)[1:listaLukumaara]
+
+#Kaikki mahdolliset omat numerot, lisätään vektoriin
+omaNumeroSimuloitu <- c(omaNumeroSimuloitu,alkuKohta[otos==omaKoodi]+omaSijoitus)
+
+}
+
+pNumero <- as.data.frame(table(omaNumeroSimuloitu)/length(omaNumeroSimuloitu)) %>% 
+  mutate(omaNumero=as.numeric(as.character(omaNumeroSimuloitu))) %>%
+  select(omaNumero,Freq)
+
+
+```
+
+
+
+
+```{r}
+
+```
+
+
+```{r}
+
+
+todennak <- pNumero %>%
+  arrange(desc(Freq)) %>%
+  rename(prosentti=Freq) %>%
+  mutate(prosentti=round(100*prosentti,1)) %>%
+  mutate(loppuKaksi = omaNumero %% 100) %>%
+  mutate(loppuYksi = omaNumero %% 10) 
+
+write.csv(todennak,file="Todennakoisyydet.csv")
+
+loppuKaksi <- todennak %>% group_by(loppuKaksi) %>% summarize(prosentti=sum(prosentti)) %>% arrange(desc(prosentti))
+
+loppuYksi <- todennak %>% group_by(loppuYksi) %>% summarize(prosentti=sum(prosentti)) %>% arrange(desc(prosentti))
+
+todennak_print <- todennak %>%
+  mutate(yhteensa=cumsum(prosentti)) %>%
+  select(omaNumero,prosentti,yhteensa)
+print(head(todennak_print,20))
+
+
+```
+
+
+```{r}
+
+
+gPlot <- ggplot(todennak)+
+  geom_point(aes(x=omaNumero,y=prosentti),col="red")+
+  coord_cartesian(xlim=c(1+pieninNumeroKorjaus,ehdokkaidenMaara))+
+  scale_x_continuous(breaks=seq(40,700,40))+
+
+  ggtitle("Numeron todennäköisyys")
+
+print(gPlot)
+
+
+gPlot2 <- ggplot(loppuKaksi)+
+  geom_point(aes(x=loppuKaksi,y=prosentti),col="red")+
+  scale_x_continuous(breaks=seq(0,100,10))+
+
+  ggtitle("Kahden viimeisen numeron todennäköisyys")
+
+print(gPlot2)
+
+
+gPlot3 <- ggplot(loppuKaksi)+
+  geom_smooth(aes(x=loppuKaksi,y=prosentti),span=0.1,se=FALSE)+
+    scale_x_continuous(breaks=seq(0,100,10))+
+  ggtitle("Kahden viimeisen numeron todennäköisyys")
+
+print(gPlot3)
+
+
+gPlot4 <- ggplot(loppuYksi)+
+  geom_point(aes(x=loppuYksi,y=prosentti),col="red")+
+  scale_x_continuous(breaks=seq(0,10,1))+
+
+  ggtitle("Viimeisen numeron todennäköisyys")
+
+print(gPlot4)
+
+```
+
