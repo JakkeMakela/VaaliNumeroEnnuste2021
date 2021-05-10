@@ -58,8 +58,8 @@ otos <- sample(listaKoodi)  #Oletuksena järjestää luvut
 #Poistetaan viimeinen cumsum turhana
 alkuKohta <- (c(1,cumsum(listaPituus[otos]))+pieninNumeroKorjaus)[1:listaLukumaara]
 
-#Kaikki mahdolliset omat numerot, lisätään vektoriin
-omaNumeroSimuloitu <- c(omaNumeroSimuloitu,alkuKohta[otos==omaKoodi]+omaSijoitus)
+#Kaikki mahdolliset omat numerot, lisätään vektoriin. Vähennetään yksi jotta sijaluku tulee oikein.
+omaNumeroSimuloitu <- c(omaNumeroSimuloitu,alkuKohta[otos==omaKoodi]+omaSijoitus-1)
 
 }
 
