@@ -1,8 +1,10 @@
 ---
 title: "Vaalinumerot"
 author: "Jakke Mäkelä"
-date: "2021-05-10"
-output: html_document
+date: '2021-05-10'
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 Lasketaan tietyn vaalinumeron saamisen todennäköisyys, kun henkilön paikka omalla listalla tiedetään, ja listojen henkilömäärät tiedetään.
